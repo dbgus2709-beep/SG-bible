@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="SG성경읽기"/>
+<meta name="theme-color" content="#0d1117"/>
+<title>SG 성경읽기</title>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;SG 성경읽기&quot;,&quot;short_name&quot;:&quot;SG성경&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230d1117&quot;,&quot;theme_color&quot;:&quot;%230d1117&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans KR',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
+::-webkit-scrollbar{width:0;}
+/* LAYOUT */
+.header{position:sticky;top:0;z-index:50;background:#0d1117ee;backdrop-filter:blur(10px);border-bottom:1px solid #21262d;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:8px;}
+.logo-title{font-size:15px;font-weight:700;}
+.logo-sub{font-size:10px;color:#8b949e;}
+.user-badge{background:#21262d;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #30363d;}
+.month-nav{display:flex;align-items:center;gap:6px;}
+.nav-btn{background:#161b22;border:1px solid #30363d;border-radius:6px;color:#8b949e;width:28px;height:28px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;line-height:1;}
+.month-lbl{font-size:13px;font-weight:700;min-width:72px;text-align:center;}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#161b22ee;backdrop-filter:blur(10px);border-top:1px solid #21262d;display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 10px;cursor:pointer;font-size:10px;color:#8b949e;border:none;background:none;font-family:inherit;gap:2px;transition:color .15s;}
+.ni .ico{font-size:20px;}
+.ni.on{color:#3b82f6;}
+.main{padding-bottom:72px;}
+.hidden{display:none!important;}
+.screen{display:none;}
+.screen.on{display:block;}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px;}
+.wds{display:grid;grid-template-columns:repeat(7,1fr);padding:0 5px;}
+.wd{font-size:10px;color:#8b949e;text-align:center;padding:4px 0;}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 5px 4px;}
+.dc{border-radius:8px;padding:4px 2px;min-height:68px;background:#161b22;cursor:pointer;display:flex;flex-direction:column;align-items:center;border:1.5px solid transparent;transition:all .12s;}
+.dc.empty{background:transparent;cursor:default;border:none;}
+.dc.today{border-color:#3b82f6;}
+.dc.done{background:#0c2540;}
+.dc.sun .dn{color:#f85149;}
+.dc.sat .dn{color:#3b82f6;}
+.dn{font-size:12px;font-weight:700;margin-bottom:1px;}
+.dr{font-size:7px;color:#6e7681;text-align:center;line-height:1.4;flex:1;padding:0 1px;word-break:keep-all;}
+.dr.ot{color:#d97706;}
+.dr.nt{color:#3b82f6;}
+.ck{width:14px;height:14px;border-radius:50%;border:1.5px solid #30363d;display:flex;align-items:center;justify-content:center;font-size:7px;margin-top:2px;flex-shrink:0;transition:all .2s;}
+.dc.done .ck{background:#3b82f6;border-color:#3b82f6;color:#fff;}
+.cal-foot{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;}
+.pbar{flex:1;height:5px;background:#21262d;border-radius:3px;margin:0 10px;}
+.pfill{height:100%;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .5s;}
+.cal-info{font-size:12px;color:#8b949e;}
+.cal-pct{font-size:13px;font-weight:700;color:#3b82f6;}
+
+/* COMMUNITY PROGRESS */
+.pv{padding:12px 14px 12px;}
+.sec-hd{font-size:11px;font-weight:700;color:#8b949e;letter-spacing:.1em;text-transform:uppercase;margin:14px 0 8px;}
+.my-card{background:linear-gradient(135deg,#0c2540,#1a3a5c);border-radius:14px;padding:16px;margin-bottom:6px;border:1px solid #3b82f630;}
+.my-cyc{display:flex;gap:6px;margin-bottom:10px;}
+.cyc-chip{flex:1;text-align:center;padding:7px 4px;border-radius:8px;background:#ffffff08;font-size:11px;}
+.cyc-chip.cur{background:#3b82f620;border:1px solid #3b82f640;}
+.cyc-pct{font-size:16px;font-weight:900;color:#3b82f6;}
+.cyc-lbl{font-size:9px;color:#8b949e;margin-top:1px;}
+.mem-list{display:flex;flex-direction:column;gap:6px;}
+.mem-card{background:#161b22;border-radius:12px;padding:12px 14px;border:1px solid #21262d;display:flex;align-items:center;gap:12px;}
+.mem-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
+.mem-info{flex:1;min-width:0;}
+.mem-name{font-size:13px;font-weight:700;margin-bottom:3px;}
+.mem-pbar{height:4px;background:#21262d;border-radius:2px;}
+.mem-pfill{height:100%;border-radius:2px;background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+.mem-sub{font-size:10px;color:#8b949e;margin-top:3px;display:flex;justify-content:space-between;}
+.mem-pct{font-size:13px;font-weight:700;color:#3b82f6;flex-shrink:0;}
+.empty-state{text-align:center;padding:32px 16px;color:#8b949e;font-size:13px;line-height:1.8;}
+
+/* DEVOTIONAL FEED */
+.dv{padding:12px 14px;}
+.dv-write{background:#161b22;border-radius:14px;padding:14px;margin-bottom:14px;border:1px solid #21262d;}
+.dv-today{font-size:11px;color:#3b82f6;font-weight:700;margin-bottom:6px;}
+.dv-rdg{font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;}
+textarea{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:10px;color:#e6edf3;font-family:inherit;font-size:14px;padding:11px;resize:none;outline:none;line-height:1.7;transition:border .2s;}
+textarea:focus{border-color:#3b82f6;}
+.dv-btns{display:flex;gap:8px;margin-top:10px;}
+.btn{flex:1;padding:11px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.btn:active{opacity:.7;}
+.btn-g{background:#21262d;color:#e6edf3;}
+.btn-b{background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;}
+.feed{display:flex;flex-direction:column;gap:8px;}
+.fc{background:#161b22;border-radius:12px;padding:14px;border:1px solid #21262d;}
+.fc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.fc-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;}
+.fc-meta{flex:1;min-width:0;}
+.fc-name{font-size:13px;font-weight:700;}
+.fc-date{font-size:10px;color:#8b949e;}
+.fc-rdg{font-size:11px;color:#3b82f6;margin-bottom:6px;}
+.fc-txt{font-size:13px;line-height:1.8;color:#c9d1d9;white-space:pre-wrap;}
+.fc-likes{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #21262d;}
+.like-btn{background:none;border:none;color:#8b949e;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;transition:all .15s;}
+.like-btn.liked{color:#f85149;}
+.like-btn:hover{background:#ffffff0a;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:#000c;z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.modal{background:#161b22;border-radius:22px 22px 0 0;padding:22px 18px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:430px;max-height:85vh;overflow-y:auto;animation:slideup .22s ease;}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.m-drag{width:40px;height:4px;background:#30363d;border-radius:2px;margin:0 auto 18px;}
+.m-title{font-size:17px;font-weight:700;margin-bottom:3px;}
+.m-sub{font-size:12px;color:#8b949e;margin-bottom:16px;}
+.rb{margin-bottom:8px;padding:12px 14px;border-radius:11px;}
+.rb.ot{background:#1a0f00;border:1px solid #d9770625;}
+.rb.nt{background:#001122;border:1px solid #3b82f625;}
+.rb-type{font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:2px;}
+.rb.ot .rb-type{color:#d97706;}
+.rb.nt .rb-type{color:#3b82f6;}
+.rb-name{font-size:16px;font-weight:700;}
+.rb-ch{font-size:12px;color:#8b949e;margin-top:2px;}
+.ck-btn{width:100%;padding:13px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:14px;transition:all .2s;}
+.close-btn{width:100%;margin-top:8px;padding:11px;background:transparent;border:1px solid #30363d;border-radius:11px;color:#8b949e;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* NAME MODAL */
+.nm-overlay{position:fixed;inset:0;background:#000d;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+.nm-box{background:#161b22;border-radius:20px;padding:28px 22px;width:100%;max-width:380px;border:1px solid #30363d;}
+.nm-icon{font-size:48px;text-align:center;margin-bottom:16px;}
+.nm-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:6px;}
+.nm-desc{font-size:13px;color:#8b949e;text-align:center;line-height:1.7;margin-bottom:20px;}
+.nm-inp{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:10px;color:#e6edf3;font-family:inherit;font-size:16px;padding:13px;outline:none;margin-bottom:12px;text-align:center;}
+.nm-inp:focus{border-color:#3b82f6;}
+.nm-btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f2937;border:1px solid #374151;border-radius:12px;padding:11px 20px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:32px;gap:8px;color:#8b949e;font-size:13px;}
+.spin{width:18px;height:18px;border:2px solid #21262d;border-top-color:#3b82f6;border-radius:50%;animation:sp 1s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header" id="hdr">
+  <div class="logo">
+    <span style="font-size:22px">📖</span>
+    <div>
+      <div class="logo-title">SG 성경읽기</div>
+      <div class="logo-sub">2026 · 연 3독 도전</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div class="month-nav" id="mnav" style="display:none">
+      <button class="nav-btn" onclick="chM(-1)">‹</button>
+      <span class="month-lbl" id="mlbl"></span>
+      <button class="nav-btn" onclick="chM(1)">›</button>
+    </div>
+    <div class="user-badge" id="ubadge" onclick="editName()"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- Calendar -->
+  <div id="s-cal" class="screen on">
+    <div class="wds">
+      <div class="wd" style="color:#f85149">일</div>
+      <div class="wd">월</div><div class="wd">화</div><div class="wd">수</div>
+      <div class="wd">목</div><div class="wd">금</div>
+      <div class="wd" style="color:#3b82f6">토</div>
+    </div>
+    <div class="cal" id="cal"></div>
+    <div class="cal-foot">
+      <span class="cal-info" id="cinfo"></span>
+      <div class="pbar"><div class="pfill" id="cpfill"></div></div>
+      <span class="cal-pct" id="cpct"></span>
+    </div>
+  </div>
+
+  <!-- Community Progress -->
+  <div id="s-prog" class="screen pv">
+    <div class="sec-hd">나의 진도</div>
+    <div class="my-card">
+      <div class="my-cyc" id="my-cyc"></div>
+      <div class="pbar" style="margin:0"><div class="pfill" id="my-pfill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:11px;color:#8b949e" id="my-info"></span>
+        <span style="font-size:12px;font-weight:700;color:#3b82f6" id="my-pct"></span>
+      </div>
+    </div>
+    <div class="sec-hd">멤버 현황</div>
+    <div class="mem-list" id="memlist"><div class="loading"><div class="spin"></div>불러오는 중…</div></div>
+  </div>
+
+  <!-- Devotional Feed -->
+  <div id="s-devo" class="screen dv">
+    <div class="dv-write">
+      <div class="dv-today" id="dv-today"></div>
+      <div class="dv-rdg" id="dv-rdg"></div>
+      <textarea id="dv-ta" rows="5" placeholder="오늘 말씀을 읽으며 느낀 점, 깨달음, 기도 제목을 나눠주세요 🙏"></textarea>
+      <div class="dv-btns">
+        <button class="btn btn-b" onclick="postDevo()">✏️ 묵상 나누기</button>
+      </div>
+    </div>
+    <div class="sec-hd" style="margin-top:0">묵상 피드</div>
+    <div class="feed" id="feed"><div class="loading"><div class="spin"></div>불러오는 중…</div></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="ni on" id="n-cal" onclick="sv('cal')"><span class="ico">📅</span>캘린더</button>
+  <button class="ni" id="n-prog" onclick="sv('prog')"><span class="ico">👥</span>진도공유</button>
+  <button class="ni" id="n-devo" onclick="sv('devo')"><span class="ico">✍️</span>묵상나눔</button>
+</div>
+
+<!-- DAY MODAL -->
+<div class="overlay hidden" id="dm" onclick="closeDM()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="m-drag"></div>
+    <div class="m-title" id="dm-t"></div>
+    <div class="m-sub" id="dm-s"></div>
+    <div id="dm-rd"></div>
+    <button class="ck-btn" id="dm-ck" onclick="toggleCk()"></button>
+    <button class="close-btn" onclick="closeDM()">닫기</button>
+  </div>
+</div>
+
+<!-- NAME MODAL -->
+<div class="nm-overlay" id="nm">
+  <div class="nm-box">
+    <div class="nm-icon">📖</div>
+    <div class="nm-title">SG 성경읽기</div>
+    <div class="nm-desc">스탠드그라운드 2026 연 3독 챌린지<br/>함께 읽고, 함께 나눠요 🙏<br/><br/>묵상 공유 시 표시될 이름을 입력해주세요.</div>
+    <input class="nm-inp" id="nm-inp" placeholder="이름 입력" maxlength="8" onkeydown="if(event.key==='Enter')saveName()"/>
+    <button class="nm-btn" onclick="saveName()">시작하기 →</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+// ════════════════════════════════════════════════
+// 🔥 FIREBASE 설정 — 여기에 본인 설정 붙여넣기
+// ════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDDr7x64_ZJwqh23FMz9zGKHeQigR5-1Kw",
+  authDomain: "sg-bible.firebaseapp.com",
+  databaseURL: "https://sg-bible-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sg-bible",
+  storageBucket: "sg-bible.firebasestorage.app",
+  messagingSenderId: "902248520594",
+  appId: "1:902248520594:web:87df2a869de27f93cfbf4b"
+};
+// ════════════════════════════════════════════════
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ── 성경 목록 (구약↔신약 교차) ───────────────────
+const BK=[
+  {n:'창세기',a:'창',c:50,t:'구약'},{n:'마태복음',a:'마태',c:28,t:'신약'},
+  {n:'출애굽기',a:'출',c:40,t:'구약'},{n:'마가복음',a:'막',c:16,t:'신약'},
+  {n:'레위기',a:'레',c:27,t:'구약'},{n:'누가복음',a:'눅',c:24,t:'신약'},
+  {n:'민수기',a:'민',c:36,t:'구약'},{n:'요한복음',a:'요',c:21,t:'신약'},
+  {n:'신명기',a:'신',c:34,t:'구약'},{n:'사도행전',a:'행',c:28,t:'신약'},
+  {n:'여호수아',a:'수',c:24,t:'구약'},{n:'로마서',a:'롬',c:16,t:'신약'},
+  {n:'사사기',a:'삿',c:21,t:'구약'},{n:'고린도전서',a:'고전',c:16,t:'신약'},
+  {n:'룻기',a:'룻',c:4,t:'구약'},{n:'고린도후서',a:'고후',c:13,t:'신약'},
+  {n:'사무엘상',a:'삼상',c:31,t:'구약'},{n:'갈라디아서',a:'갈',c:6,t:'신약'},
+  {n:'사무엘하',a:'삼하',c:24,t:'구약'},{n:'에베소서',a:'엡',c:6,t:'신약'},
+  {n:'열왕기상',a:'왕상',c:22,t:'구약'},{n:'빌립보서',a:'빌',c:4,t:'신약'},
+  {n:'열왕기하',a:'왕하',c:25,t:'구약'},{n:'골로새서',a:'골',c:4,t:'신약'},
+  {n:'역대상',a:'대상',c:29,t:'구약'},{n:'데살로니가전서',a:'살전',c:5,t:'신약'},
+  {n:'역대하',a:'대하',c:36,t:'구약'},{n:'데살로니가후서',a:'살후',c:3,t:'신약'},
+  {n:'에스라',a:'스',c:10,t:'구약'},{n:'디모데전서',a:'딤전',c:6,t:'신약'},
+  {n:'느헤미야',a:'느',c:13,t:'구약'},{n:'디모데후서',a:'딤후',c:4,t:'신약'},
+  {n:'에스더',a:'에',c:10,t:'구약'},{n:'디도서',a:'딛',c:3,t:'신약'},
+  {n:'욥기',a:'욥',c:42,t:'구약'},{n:'빌레몬서',a:'몬',c:1,t:'신약'},
+  {n:'시편',a:'시',c:150,t:'구약'},{n:'히브리서',a:'히',c:13,t:'신약'},
+  {n:'잠언',a:'잠',c:31,t:'구약'},{n:'야고보서',a:'약',c:5,t:'신약'},
+  {n:'전도서',a:'전',c:12,t:'구약'},{n:'베드로전서',a:'벧전',c:5,t:'신약'},
+  {n:'아가',a:'아',c:8,t:'구약'},{n:'베드로후서',a:'벧후',c:3,t:'신약'},
+  {n:'이사야',a:'사',c:66,t:'구약'},{n:'요한일서',a:'요일',c:5,t:'신약'},
+  {n:'예레미야',a:'렘',c:52,t:'구약'},{n:'요한이서',a:'요이',c:1,t:'신약'},
+  {n:'예레미야애가',a:'애',c:5,t:'구약'},{n:'요한삼서',a:'요삼',c:1,t:'신약'},
+  {n:'에스겔',a:'겔',c:48,t:'구약'},{n:'유다서',a:'유',c:1,t:'신약'},
+  {n:'다니엘',a:'단',c:12,t:'구약'},{n:'요한계시록',a:'계',c:22,t:'신약'},
+  {n:'호세아',a:'호',c:14,t:'구약'},{n:'요엘',a:'욜',c:3,t:'구약'},
+  {n:'아모스',a:'암',c:9,t:'구약'},{n:'오바댜',a:'옵',c:1,t:'구약'},
+  {n:'요나',a:'욘',c:4,t:'구약'},{n:'미가',a:'미',c:7,t:'구약'},
+  {n:'나훔',a:'나',c:3,t:'구약'},{n:'하박국',a:'합',c:3,t:'구약'},
+  {n:'스바냐',a:'습',c:3,t:'구약'},{n:'학개',a:'학',c:2,t:'구약'},
+  {n:'스가랴',a:'슥',c:14,t:'구약'},{n:'말라기',a:'말',c:4,t:'구약'}
+];
+
+const YEAR=2026;
+const MN=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const DN=['일','월','화','수','목','금','토'];
+const COLORS=['#3b82f6','#22c55e','#f59e0b','#ec4899','#a855f7','#14b8a6','#f97316','#6366f1'];
+
+function fk(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+// ── 읽기 계획 생성 ────────────────────────────────
+function genPlan(yr){
+  const plan={};
+  const cycles=[[new Date(yr,0,1),new Date(yr,3,30)],[new Date(yr,4,1),new Date(yr,7,31)],[new Date(yr,8,1),new Date(yr,11,31)]];
+  const tot=1189;
+  cycles.forEach(([s,e])=>{
+    const days=Math.round((e-s)/86400000)+1;
+    let bi=0,ci=1;
+    for(let d=0;d<days;d++){
+      const dt=new Date(s); dt.setDate(dt.getDate()+d);
+      const key=fk(dt);
+      const prev=Math.round(tot*d/days), curr=Math.round(tot*(d+1)/days);
+      let left=curr-prev; const rds=[];
+      while(left>0&&bi<BK.length){
+        const bk=BK[bi]; const from=ci; const avail=bk.c-ci+1; const take=Math.min(left,avail);
+        rds.push({b:bk.n,a:bk.a,t:bk.t,f:from,to:from+take-1});
+        left-=take;
+        if(from+take-1>=bk.c){bi++;ci=1;}else ci+=take;
+      }
+      plan[key]=rds;
+    }
+  });
+  return plan;
+}
+const PLAN=genPlan(YEAR);
+
+// ── 사용자 ────────────────────────────────────────
+let myName='', myId='', curM=new Date().getMonth(), curV='cal', mdk=null;
+
+function initUser(){
+  myName=localStorage.getItem('sg_nm')||'';
+  myId=localStorage.getItem('sg_id')||(()=>{const id='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);localStorage.setItem('sg_id',id);return id;})();
+  if(!myName){document.getElementById('nm').style.display='flex';}
+  else{document.getElementById('nm').style.display='none';document.getElementById('ubadge').textContent='👤 '+myName;init();}
+}
+
+function saveName(){
+  const n=document.getElementById('nm-inp').value.trim();
+  if(!n){showToast('이름을 입력해주세요');return;}
+  myName=n; localStorage.setItem('sg_nm',n);
+  document.getElementById('nm').style.display='none';
+  document.getElementById('ubadge').textContent='👤 '+myName;
+  init();
+}
+
+function editName(){
+  document.getElementById('nm-inp').value=myName;
+  document.getElementById('nm').style.display='flex';
+}
+
+// ── 로컬 체크 + Firebase 동기화 ───────────────────
+function getMyChecks(){try{return JSON.parse(localStorage.getItem('sg_ck')||'{}');}catch{return{};}}
+function setMyChecks(o){localStorage.setItem('sg_ck',JSON.stringify(o));}
+
+function toggleCkLocal(key){
+  const c=getMyChecks(); c[key]=!c[key]; if(!c[key])delete c[key];
+  setMyChecks(c); syncProgress();
+}
+
+function syncProgress(){
+  if(!myId||!myName) return;
+  const ck=getMyChecks();
+  let tot=0,don=0;
+  for(let m=0;m<12;m++){const dim=new Date(YEAR,m+1,0).getDate();for(let d=1;d<=dim;d++){const k=fk(new Date(YEAR,m,d));if(PLAN[k]&&PLAN[k].length){tot++;if(ck[k])don++;}}}
+  const monthly={};
+  for(let m=0;m<12;m++){
+    let mt=0,md=0;const dim=new Date(YEAR,m+1,0).getDate();
+    for(let d=1;d<=dim;d++){const k=fk(new Date(YEAR,m,d));if(PLAN[k]&&PLAN[k].length){mt++;if(ck[k])md++;}}
+    monthly[m]={t:mt,d:md};
+  }
+  db.ref('progress/'+myId).set({name:myName,tot,don,monthly,ts:Date.now()});
+}
+
+// ── 묵상 저장 ─────────────────────────────────────
+function postDevo(){
+  const txt=document.getElementById('dv-ta').value.trim();
+  if(!txt){showToast('묵상 내용을 입력해주세요');return;}
+  if(!myName){showToast('이름을 먼저 설정해주세요');return;}
+  const today=new Date(); const tk=fk(today);
+  const rds=PLAN[tk]||[];
+  const rdStr=rds.length?rds.map(r=>`${r.b} ${r.f}${r.f===r.to?'장':'-'+r.to+'장'}`).join(' + '):'';
+  db.ref('devos').push({uid:myId,name:myName,text:txt,rdg:rdStr,date:tk,ts:Date.now(),likes:{}});
+  document.getElementById('dv-ta').value='';
+  showToast('묵상을 나눴어요 🙏');
+}
+
+function toggleLike(devoId, liked){
+  if(!myId) return;
+  const ref=db.ref('devos/'+devoId+'/likes/'+myId);
+  liked?ref.remove():ref.set(true);
+}
+
+// ── 색상 & 아바타 ─────────────────────────────────
+function getColor(id){return COLORS[Math.abs(id.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%COLORS.length];}
+function getAvatar(name){return name?name[0].toUpperCase():'?';}
+
+// ── 캘린더 ────────────────────────────────────────
+function rCal(){
+  const today=new Date(); const tk=fk(today); const ck=getMyChecks();
+  document.getElementById('mlbl').textContent=`${YEAR}년 ${MN[curM]}`;
+  const fd=new Date(YEAR,curM,1).getDay();
+  const dim=new Date(YEAR,curM+1,0).getDate();
+  let h='',mt=0,md=0;
+  for(let i=0;i<fd;i++) h+='<div class="dc empty"></div>';
+  for(let d=1;d<=dim;d++){
+    const k=fk(new Date(YEAR,curM,d));
+    const rds=PLAN[k]||[]; const done=!!ck[k]; const isT=k===tk; const dow=new Date(YEAR,curM,d).getDay();
+    if(rds.length)mt++; if(done)md++;
+    let dr='',drc='';
+    if(rds.length===1){const r=rds[0];drc=r.t==='구약'?'ot':'nt';dr=`${r.a} ${r.f===r.to?r.f+'장':r.f+'-'+r.to+'장'}`;}
+    else if(rds.length>1){drc='nt';dr=rds.map(r=>`${r.a} ${r.f}-${r.to}`).join('<br>');}
+    const cls=['dc',done?'done':'',isT?'today':'',dow===0?'sun':dow===6?'sat':''].filter(Boolean).join(' ');
+    h+=`<div class="${cls}" onclick="openDM('${k}')"><div class="dn">${d}</div><div class="dr ${drc}">${dr}</div><div class="ck">${done?'✓':''}</div></div>`;
+  }
+  document.getElementById('cal').innerHTML=h;
+  const pct=mt?Math.round(md/mt*100):0;
+  document.getElementById('cinfo').textContent=`${md}/${mt}일 완료`;
+  document.getElementById('cpfill').style.width=pct+'%';
+  document.getElementById('cpct').textContent=pct+'%';
+}
+
+// ── 진도공유 ──────────────────────────────────────
+function rProg(){
+  const ck=getMyChecks();
+  const cycData=[[0,3],[4,7],[8,11]].map(([s,e],i)=>{
+    let tot=0,don=0;
+    for(let m=s;m<=e;m++){const dim=new Date(YEAR,m+1,0).getDate();for(let d=1;d<=dim;d++){const k=fk(new Date(YEAR,m,d));if(PLAN[k]&&PLAN[k].length){tot++;if(ck[k])don++;}}}
+    return {tot,don,pct:tot?Math.round(don/tot*100):0};
+  });
+  const curCyc=curM<4?0:curM<8?1:2;
+  const h=cycData.map((c,i)=>`<div class="cyc-chip ${i===curCyc?'cur':''}"><div class="cyc-pct">${c.pct}%</div><div class="cyc-lbl">${i+1}독 ${['1-4월','5-8월','9-12월'][i]}</div></div>`).join('');
+  document.getElementById('my-cyc').innerHTML=h;
+  let ytot=0,ydon=0;
+  for(let m=0;m<12;m++){const dim=new Date(YEAR,m+1,0).getDate();for(let d=1;d<=dim;d++){const k=fk(new Date(YEAR,m,d));if(PLAN[k]&&PLAN[k].length){ytot++;if(ck[k])ydon++;}}}
+  const ypct=ytot?Math.round(ydon/ytot*100):0;
+  document.getElementById('my-pfill').style.width=ypct+'%';
+  document.getElementById('my-info').textContent=`${ydon}/${ytot}일 완료`;
+  document.getElementById('my-pct').textContent=ypct+'%';
+}
+
+function listenProgress(){
+  db.ref('progress').on('value', snap=>{
+    const data=snap.val()||{};
+    const members=Object.entries(data).sort((a,b)=>b[1].don-a[1].don);
+    if(!members.length){document.getElementById('memlist').innerHTML='<div class="empty-state">아직 다른 멤버가 없어요<br/>친구들에게 앱을 공유해보세요 🙏</div>';return;}
+    let h='';
+    members.forEach(([id,m])=>{
+      const pct=m.tot?Math.round(m.don/m.tot*100):0;
+      const col=getColor(id); const isMe=id===myId;
+      h+=`<div class="mem-card" ${isMe?'style="border-color:#3b82f640"':''}>
+        <div class="mem-av" style="background:${col}20;color:${col}">${getAvatar(m.name)}</div>
+        <div class="mem-info">
+          <div class="mem-name">${m.name}${isMe?' <span style="font-size:10px;color:#8b949e">(나)</span>':''}</div>
+          <div class="mem-pbar"><div class="mem-pfill" style="width:${pct}%;background:${col}"></div></div>
+          <div class="mem-sub"><span>${m.don}/${m.tot}일 완료</span><span style="color:${col}">${pct}%</span></div>
+        </div>
+        <div class="mem-pct" style="color:${col}">${pct}%</div>
+      </div>`;
+    });
+    document.getElementById('memlist').innerHTML=h;
+  });
+}
+
+// ── 묵상 피드 ─────────────────────────────────────
+function rDevoHeader(){
+  const today=new Date(); const tk=fk(today);
+  const rds=PLAN[tk]||[];
+  document.getElementById('dv-today').textContent=`📅 ${today.getMonth()+1}월 ${today.getDate()}일 오늘의 말씀`;
+  document.getElementById('dv-rdg').textContent=rds.length?rds.map(r=>`${r.b} ${r.f}${r.f===r.to?'장':'-'+r.to+'장'} (${r.t})`).join(' · '):'읽기 계획이 없습니다';
+}
+
+function listenDevos(){
+  db.ref('devos').orderByChild('ts').limitToLast(50).on('value', snap=>{
+    const data=snap.val()||{};
+    const list=Object.entries(data).reverse();
+    if(!list.length){document.getElementById('feed').innerHTML='<div class="empty-state">아직 묵상 나눔이 없어요<br/>첫 묵상을 나눠보세요 🙏</div>';return;}
+    let h='';
+    list.forEach(([id,dv])=>{
+      const dt=new Date(dv.ts);
+      const col=getColor(dv.uid||id);
+      const likes=dv.likes||{};
+      const likeCount=Object.keys(likes).length;
+      const liked=!!(myId&&likes[myId]);
+      const dStr=`${dt.getMonth()+1}월 ${dt.getDate()}일 ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      h+=`<div class="fc">
+        <div class="fc-top">
+          <div class="fc-av" style="background:${col}20;color:${col}">${getAvatar(dv.name)}</div>
+          <div class="fc-meta">
+            <div class="fc-name">${dv.name||'익명'}${dv.uid===myId?' <span style="font-size:10px;color:#8b949e">(나)</span>':''}</div>
+            <div class="fc-date">${dStr}</div>
+          </div>
+        </div>
+        ${dv.rdg?`<div class="fc-rdg">📖 ${dv.rdg}</div>`:''}
+        <div class="fc-txt">${esc(dv.text)}</div>
+        <div class="fc-likes">
+          <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${id}',${liked})">
+            ${liked?'❤️':'🤍'} ${likeCount||'아멘'}
+          </button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('feed').innerHTML=h;
+  });
+}
+
+function esc(t){return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── 데이 모달 ─────────────────────────────────────
+function openDM(key){
+  mdk=key;
+  const ck=getMyChecks(); const [yr,mo,dy]=key.split('-').map(Number);
+  const dt=new Date(yr,mo-1,dy); const rds=PLAN[key]||[];
+  const cn=mo<=4?1:mo<=8?2:3;
+  document.getElementById('dm-t').textContent=`${MN[mo-1]} ${dy}일 (${DN[dt.getDay()]})`;
+  document.getElementById('dm-s').textContent=`성경 ${cn}독 · ${mo<=4?'1~4월':mo<=8?'5~8월':'9~12월'}`;
+  let h=rds.length?rds.map(r=>{
+    const ch=r.f===r.to?`${r.f}장`:`${r.f}-${r.to}장 (${r.to-r.f+1}장)`;
+    return `<div class="rb ${r.t==='구약'?'ot':'nt'}"><div class="rb-type">${r.t}</div><div class="rb-name">${r.b}</div><div class="rb-ch">${ch}</div></div>`;
+  }).join(''):'<p style="color:#8b949e;font-size:13px;padding:8px 0">이 날은 읽기 계획이 없습니다</p>';
+  document.getElementById('dm-rd').innerHTML=h;
+  updDMBtn(ck[key]);
+  document.getElementById('dm').classList.remove('hidden');
+}
+function updDMBtn(done){
+  const btn=document.getElementById('dm-ck');
+  btn.textContent=done?'✓ 완료됨 (취소하기)':'✅ 읽기 완료 표시';
+  btn.style.cssText=`background:${done?'#21262d':'linear-gradient(135deg,#3b82f6,#60a5fa)'};color:${done?'#8b949e':'#fff'}`;
+}
+function toggleCk(){
+  if(!mdk)return;
+  toggleCkLocal(mdk);
+  const ck=getMyChecks();
+  updDMBtn(ck[mdk]);
+  if(curV==='cal')rCal();
+  showToast(ck[mdk]?'✓ 완료 표시했어요!':'표시를 취소했어요');
+}
+function closeDM(){document.getElementById('dm').classList.add('hidden');}
+
+// ── NAV ───────────────────────────────────────────
+function sv(v){
+  curV=v;
+  ['cal','prog','devo'].forEach(x=>{
+    document.getElementById('s-'+x).classList.toggle('on',x===v);
+    document.getElementById('n-'+x).classList.toggle('on',x===v);
+  });
+  document.getElementById('mnav').style.display=v==='cal'?'flex':'none';
+  if(v==='cal')rCal();
+  if(v==='prog'){rProg();}
+  if(v==='devo'){rDevoHeader();}
+}
+function chM(d){curM=Math.max(0,Math.min(11,curM+d));rCal();}
+
+// ── TOAST ─────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── INIT ──────────────────────────────────────────
+function init(){
+  curM=new Date().getMonth();
+  sv('cal');
+  syncProgress();
+  listenProgress();
+  listenDevos();
+  rDevoHeader();
+}
+initUser();
+</script>
+</body>
+</html>
