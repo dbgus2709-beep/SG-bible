@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="SG성경읽기"/>
 <meta name="theme-color" content="#0d1117"/>
 <title>SG 성경읽기</title>
-<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;SG 성경읽기&quot;,&quot;short_name&quot;:&quot;SG성경&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230d1117&quot;,&quot;theme_color&quot;:&quot;%230d1117&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}"/>
+<link rel="manifest" href="manifest.json"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -575,6 +575,15 @@ function init(){
   rDevoHeader();
 }
 initUser();
+
+// PWA 서비스워커 등록
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(()=>console.log('SW registered'))
+      .catch(e=>console.log('SW error',e));
+  });
+}
 </script>
 </body>
 </html>
